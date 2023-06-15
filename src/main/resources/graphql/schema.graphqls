@@ -1,8 +1,36 @@
+scalar DateTime
+
 type Query {
     user(id: ID!): User
+    login(email: String!, password: String!): String # returns a token
+    me: User # returns the logged in user with the token
+    chat(id: ID!): Chat
+}
+
+type Mutation {
+    createChat(creatorId: ID!, members: [ID!]): Chat
+    inviteToChat(chatId: ID!, members: [ID!]): Chat
+    leaveChat(chatId: ID!): Chat
+    sendMessage(chatId: ID!, senderId: ID!, body: String!): Message
 }
 
 type User {
     id: ID!
     email: String!
+    chats: [Chat!]!
 }
+
+type Chat {
+    id: ID!
+    members: [User!]!
+    messages: [Message!]!
+}
+
+type Message {
+    id: ID!
+    sender: User
+    body: String!
+    createdAt: DateTime!
+}
+
+
