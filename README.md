@@ -24,6 +24,7 @@ GraphQL로 채팅앱 서버 구축하기
 * `Chat`의 구성원중, 한명의 `Creator`가 존재합니다. `Chat`이 존재하는 동안, `Chat`의 `Creator`는 변하지 않습니다.
 * `User`는 자신이 속한 `Chat`목록을 조회할 수 있습니다.
 * `User`는 `Chat`을 생성할 수 있습니다.
+* `User`는 `Chat`에서 떠날 수 있습니다.
 * `User`는 `Chat`생성시 또는 생성 후에 다른 구성원들을 추가할 수 있습니다.
 * `Creator`가 아닌 구성원은 최소 한개의 `Message`가 `Chat`에 존재 할 때만 해당 `Chat`을 조회할 수 있습니다.
 * 로그인한 `User`는, 해당 `User`가 구성원으로서 속한 모든 `Chat`을 구독합니다.
