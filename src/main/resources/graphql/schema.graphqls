@@ -2,16 +2,20 @@ scalar DateTime
 
 type Query {
     user(id: ID!): User
-    login(email: String!, password: String!): String # returns a token
-    me: User # returns the logged in user with the token
+    login(email: String!, password: String!): String # 토큰을 반환함
+    me: User # 로그인된 유저를 반환함
     chat(id: ID!): Chat
 }
 
 type Mutation {
     createChat(creatorId: ID!, members: [ID!]): Chat
-    inviteToChat(chatId: ID!, members: [ID!]): Chat
+    inviteToChat(chatId: ID!, members: [ID!]!): Chat
     leaveChat(chatId: ID!): Chat
     sendMessage(chatId: ID!, senderId: ID!, body: String!): Message
+}
+
+type Subscription {
+    messageSent: Message # 로그인된 유저가 속한 채팅방에 메시지가 전송되면 반환함
 }
 
 type User {
@@ -28,9 +32,11 @@ type Chat {
 
 type Message {
     id: ID!
+    chat: Chat
     sender: User
     body: String!
     createdAt: DateTime!
 }
+
 
 
