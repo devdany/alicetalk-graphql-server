@@ -1,0 +1,17 @@
+[
+  {
+    "id": "1",
+    "email": "dany@elice.com",
+    "password": "1234"
+  },
+  {
+    "id": "2",
+    "email": "heidi@elice.com",
+    "password": "1234"
+  },
+  {
+    "id": "3",
+    "email": "rookie@elice.com",
+    "password": "1234"
+  }
+]
