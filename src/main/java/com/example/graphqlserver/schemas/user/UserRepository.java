@@ -19,4 +19,8 @@ public class UserRepository {
   public User findByEmailAndPassword(String email, String password) {
     return users.stream().filter(user -> user.getEmail().equals(email) && user.getPassword().equals(password)).findFirst().orElse(null);
   }
+
+  public boolean includeInvalidUserId(String[] userIds) {
+    return Arrays.stream(userIds).anyMatch(userId -> findById(userId) == null);
+  }
 }

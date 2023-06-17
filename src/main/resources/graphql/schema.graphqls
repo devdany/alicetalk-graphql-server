@@ -8,8 +8,8 @@ type Query {
 }
 
 type Mutation {
-    createChat(creatorId: ID!, members: [ID!]): Chat
-    inviteToChat(chatId: ID!, members: [ID!]!): Chat
+    createChat(memberIds: [ID!]): Chat
+    inviteToChat(chatId: ID!, memberIds: [ID!]!): Chat
     leaveChat(chatId: ID!): Chat
     sendMessage(chatId: ID!, senderId: ID!, body: String!): Message
 }
