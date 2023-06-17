@@ -1,40 +1,93 @@
 scalar DateTime
 
 type Query {
+    """
+    * 특정 User 조회합니다.
+    * @param id: User의 id
+    * @return the User Schema
+    """
     user(id: ID!): User
-    login(email: String!, password: String!): String # 토큰을 반환함
-    me: User # 로그인된 유저를 반환함
+    """
+    * 유저 인증 정보로 로그인합니다.
+    * @param email: 유저 이메일
+    * @param password: 유저 비밀번호
+    * @return 인증 토큰
+    """
+    login(email: String!, password: String!): String
+    """
+    * Authorization 헤더의 토큰의 소유자를 조회합니다.
+    * @return the user object
+    """
+    me: User
+    """
+    * 특정 Chat을 조회합니다.
+    * @param id: Chat의 id
+    * @return the Chat Schema
+    """
     chat(id: ID!): Chat
 }
 
 type Mutation {
+    """
+    * Chat을 생성합니다. 
+    * @param memberIds: Chat의 구성원 id 목록
+    * @return the Chat Schema
+    """
     createChat(memberIds: [ID!]): Chat
+    """
+    * Chat에 구성원을 초대합니다. 
+    * @param chatId: Chat의 id
+    * @param memberIds: 추가할 구성원 id 목록
+    * @return the Chat Schema
+    """
     inviteToChat(chatId: ID!, memberIds: [ID!]!): Chat
+    """
+    * Chat을 나갑니다. 
+    * @param chatId: 나갈 Chat의 id
+    * @return the Chat Schema
+    """
     leaveChat(chatId: ID!): Chat
+    """
+    * Chat에 Message를 전송합니다. 
+    * @param chatId: 메시지를 전송할 Chat의 id
+    * @param body: 메시지 내용
+    * @return the Message Schema
+    """
     sendMessage(chatId: ID!, body: String!): Message
 }
 
 type Subscription {
-    messageSent: Message # 로그인된 유저가 속한 채팅방에 메시지가 전송되면 반환함
+    messageSent: Message
 }
 
 type User {
+    # User의 id
     id: ID!
+    # User의 email
     email: String!
+    # User가 구성원으로 있는 Chat 목록
     chats: [Chat!]!
 }
 
 type Chat {
+    # Chat의 id
     id: ID!
+    # Chat의 구성원 목록
     members: [User!]!
+    # Chat의 메시지 목록
     messages: [Message!]!
 }
 
 type Message {
+    # Message의 id
     id: ID!
+    # Message가 속한 Chat
     chat: Chat
+    # Message의 전송자
     sender: User
+    # Message의 내용
     body: String!
+    # Message의 전송 시각
     createdAt: DateTime!
 }
 
