@@ -6,10 +6,13 @@ public class TokenHelper {
   }
 
   public static String decodeAccessToken(String accessToken) {
+    if (!isValidAccessToken(accessToken)) {
+      return null;
+    }
     return accessToken.replace("elicetalk-access-token:", "");
   }
 
-  public static Boolean isValidAccessToken(String accessToken) {
+  private static Boolean isValidAccessToken(String accessToken) {
     return accessToken.startsWith("elicetalk-access-token:");
   }
 }

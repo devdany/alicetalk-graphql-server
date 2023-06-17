@@ -8,9 +8,9 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class UserRepository {
   private static List<User> users = Arrays.asList(
-    new User("1", "dany", "1234"),
-    new User("2", "heidi", "1234"),
-    new User("3", "rookie", "1234")
+    new User("1", "dany@elice.com", "1234"),
+    new User("2", "heidi@elice.com", "1234"),
+    new User("3", "rookie@elice.com", "1234")
   );
   public User findById(String id) {
     return users.stream().filter(user -> user.getId().equals(id)).findFirst().orElse(null);
