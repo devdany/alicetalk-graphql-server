@@ -25,8 +25,6 @@ public class Chat {
 
   public static Chat create(User creator, List<User> initMembers) {
     Chat chat = new Chat();
-    // generate Random String for chatId 18 number and alphabet
-
     chat.setId("chat-" + StringUtils.generateRandomString());
     chat.setCreator(creator);
     chat.setMembers(initMembers);
