@@ -15,7 +15,7 @@ public class Chat {
   private User creator;
   private List<User> members;
 
-  public void appendUsersToMembers(User user) {
+  public void appendUsersAsMembers(User user) {
     this.members.add(user);
   }
 
@@ -27,7 +27,7 @@ public class Chat {
     Chat chat = new Chat();
     // generate Random String for chatId 18 number and alphabet
 
-    chat.setId(StringUtils.generateRandomString());
+    chat.setId("chat-" + StringUtils.generateRandomString());
     chat.setCreator(creator);
     chat.setMembers(initMembers);
 

@@ -13,6 +13,8 @@ import org.springframework.graphql.execution.ErrorType;
 import org.springframework.stereotype.Controller;
 
 import com.example.graphqlserver.GraphQLException;
+import com.example.graphqlserver.schemas.message.Message;
+import com.example.graphqlserver.schemas.message.MessageRepository;
 import com.example.graphqlserver.schemas.user.User;
 import com.example.graphqlserver.schemas.user.UserRepository;
 
@@ -25,13 +27,16 @@ public class ChatController {
   @Autowired
   UserRepository userRepository;
 
+  @Autowired
+  MessageRepository messageRepository;
+
   @QueryMapping
   public Chat chat(@Argument String id) {
     return chatRepository.findById(id);
   }
 
   @MutationMapping
-  public Chat createChat(@ContextValue String currentUserId, @Argument String[] memberIds) {
+  public Chat createChat(@ContextValue String currentUserId, @Argument List<String> memberIds) {
     User creator = userRepository.findById(currentUserId);
 
     if (creator == null) {
@@ -99,7 +104,7 @@ public class ChatController {
         throw new GraphQLException("MemberNotFound", ErrorType.NOT_FOUND);
       }
 
-      chat.appendUsersToMembers(targetAsMember);
+      chat.appendUsersAsMembers(targetAsMember);
     }
 
     return chat;
@@ -108,5 +113,10 @@ public class ChatController {
   @SchemaMapping
   public List<User> members(Chat chat) {
     return chat.getMembers();
+  }
+
+  @SchemaMapping
+  public List<Message> messages(Chat chat) {
+    return messageRepository.findByChatId(chat.getId());
   }
 }
