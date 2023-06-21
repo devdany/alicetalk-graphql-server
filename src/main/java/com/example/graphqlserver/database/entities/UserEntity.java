@@ -1,23 +1,22 @@
 package com.example.graphqlserver.database.entities;
 
 
+import java.util.ArrayList;
 import java.util.List;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-import jakarta.persistence.JoinColumn;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
 @Table(name = "users")
-@AllArgsConstructor
+@NoArgsConstructor
 @Setter
 @Getter
 public class UserEntity {
@@ -26,15 +25,16 @@ public class UserEntity {
     private String email;
     private String password;
 
-    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    @JoinTable(
-      name = "users_chats",
-      joinColumns = @JoinColumn(name = " userId"),
-      inverseJoinColumns = @JoinColumn(name = "chatId")
-    )
-    private List<ChatEntity> chats;
+    public UserEntity (String id, String email, String password) {
+      this.id = id;
+      this.email = email;
+      this.password = password;
+    }
+
+
+    @ManyToMany(mappedBy = "members")
+    private List<ChatEntity> chats = new ArrayList<ChatEntity>();
 
     @OneToMany(mappedBy = "sender", cascade = CascadeType.ALL)
-    private List<MessageEntity> messages;
+    private List<MessageEntity> messages = new ArrayList<MessageEntity>();
 }
-

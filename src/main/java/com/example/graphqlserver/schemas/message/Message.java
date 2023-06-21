@@ -7,25 +7,25 @@ import com.example.graphqlserver.schemas.chat.Chat;
 import com.example.graphqlserver.schemas.user.User;
 import com.example.graphqlserver.utils.StringUtils;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
+@AllArgsConstructor
 public class Message {
   private String id;
-  private Chat chat;
-  private User sender;
   private String body;
   private String createdAt;
+  private Chat chat;
+  private User sender;
+  
 
   public static Message create(Chat chat, User sender, String body) {
-    Message message = new Message();
-    message.setId("message-" + StringUtils.generateRandomString());
-    message.setChat(chat);
-    message.setSender(sender);
-    message.setBody(body);
-    message.setCreatedAt(LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+    String messageId = "message-" + StringUtils.generateRandomString();
+    String createdAt = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+    Message message = new Message(messageId, body, createdAt, chat, sender);
 
     return message;
   }
