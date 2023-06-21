@@ -24,5 +24,4 @@ public class MessageService {
   public Message save(Message message) {
     return translator.messageEntityToSchema(messageRepository.save(translator.messageSchemaToEntity(message)));
   }
-
 }
