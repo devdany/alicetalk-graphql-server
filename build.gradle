@@ -16,10 +16,7 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-graphql'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'com.graphql-java:graphql-java-extended-scalars:20.2'
-<<<<<<< HEAD
-=======
 	implementation 'org.projectlombok:lombok'
->>>>>>> chapter2/schema
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'mysql:mysql-connector-java'
 	runtimeOnly 'com.h2database:h2'
