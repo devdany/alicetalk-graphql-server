@@ -14,30 +14,31 @@ import org.springframework.stereotype.Controller;
 
 import com.example.graphqlserver.GraphQLException;
 import com.example.graphqlserver.schemas.message.Message;
-import com.example.graphqlserver.schemas.message.MessageRepository;
 import com.example.graphqlserver.schemas.user.User;
-import com.example.graphqlserver.schemas.user.UserRepository;
+import com.example.graphqlserver.services.ChatService;
+import com.example.graphqlserver.services.MessageService;
+import com.example.graphqlserver.services.UserService;
 
 @Controller
 public class ChatController {
 
   @Autowired
-  ChatRepository chatRepository;
+  ChatService chatService;
 
   @Autowired
-  UserRepository userRepository;
+  UserService userService;
 
   @Autowired
-  MessageRepository messageRepository;
+  MessageService messageService;
 
   @QueryMapping
   public Chat chat(@Argument String id) {
-    return chatRepository.findById(id);
+    return chatService.findById(id);
   }
 
   @MutationMapping
   public Chat createChat(@ContextValue String currentUserId, @Argument List<String> memberIds) {
-    User creator = userRepository.findById(currentUserId);
+    User creator = userService.findById(currentUserId);
 
     if (creator == null) {
       throw new GraphQLException("CreatorNotFound", ErrorType.NOT_FOUND);
@@ -47,7 +48,7 @@ public class ChatController {
     members.add(creator);
     if (memberIds != null) {
       for (String memberId : memberIds) {
-        User member = userRepository.findById(memberId);
+        User member = userService.findById(memberId);
         if (member == null) {
           throw new GraphQLException("MemberNotFound", ErrorType.NOT_FOUND);
         }
@@ -57,39 +58,43 @@ public class ChatController {
    
 
     Chat chat = Chat.create(creator, members);
-    chatRepository.create(chat);
+    chatService.save(chat);
 
     return chat;
   }
 
   @MutationMapping
   public Chat leaveChat(@Argument String chatId, @ContextValue String currentUserId) {
-    User user = userRepository.findById(currentUserId);
+    User user = userService.findById(currentUserId);
     if (user == null) {
       throw new GraphQLException("UserNotFound", ErrorType.NOT_FOUND);
     }
     
-    Chat chat = chatRepository.findById(chatId);
+    Chat chat = chatService.findById(chatId);
     if (chat == null) {
       throw new GraphQLException("ChatNotFound", ErrorType.NOT_FOUND);
     }
   
     chat.leaveChat(user);
+    chatService.save(chat);
 
-    if (chat.getMembers().size() == 0) {
-      chatRepository.archive(chat);
-    }
     return chat;
+  }
+
+  @SchemaMapping
+  public User creator(Chat chat) {
+    User creator = userService.findById(chat.getCreatorId());
+    return creator;
   }
 
   @MutationMapping
   public Chat inviteToChat(@Argument String chatId, @Argument List<String> memberIds, @ContextValue String currentUserId) {
-    User user = userRepository.findById(currentUserId);
+    User user = userService.findById(currentUserId);
     if (user == null) {
       throw new GraphQLException("UserNotFound", ErrorType.NOT_FOUND);
     }
     
-    Chat chat = chatRepository.findById(chatId);
+    Chat chat = chatService.findById(chatId);
     if (chat == null) {
       throw new GraphQLException("ChatNotFound", ErrorType.NOT_FOUND);
     }
@@ -99,13 +104,15 @@ public class ChatController {
     }
 
     for (String memberId : memberIds) {
-      User targetAsMember = userRepository.findById(memberId);
+      User targetAsMember = userService.findById(memberId);
       if (targetAsMember == null) {
         throw new GraphQLException("MemberNotFound", ErrorType.NOT_FOUND);
       }
 
       chat.appendUsersAsMembers(targetAsMember);
     }
+
+    chatService.save(chat);
 
     return chat;
   }
@@ -117,6 +124,6 @@ public class ChatController {
 
   @SchemaMapping
   public List<Message> messages(Chat chat) {
-    return messageRepository.findByChatId(chat.getId());
+    return messageService.findByChatId(chat.getId());
   }
 }

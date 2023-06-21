@@ -12,24 +12,26 @@ import org.springframework.stereotype.Controller;
 
 import com.example.graphqlserver.GraphQLException;
 import com.example.graphqlserver.schemas.chat.Chat;
-import com.example.graphqlserver.schemas.chat.ChatRepository;
+import com.example.graphqlserver.services.ChatService;
+import com.example.graphqlserver.services.UserService;
 import com.example.graphqlserver.utils.TokenHelper;
 
 
 @Controller
 public class UserController {
   @Autowired
-  private UserRepository userRepository;
+  private UserService userService;
 
   @Autowired
-  private ChatRepository chatRepository;
+  private ChatService chatService;
 
   @QueryMapping
   public User me(@ContextValue String currentUserId) {
     if (currentUserId == null) {
       throw new GraphQLException("UnAuthorized", ErrorType.UNAUTHORIZED);
     }
-    User user = userRepository.findById(currentUserId);
+
+    User user = userService.findById(currentUserId);
     if (user == null) {
       throw new GraphQLException("UserNotFound", ErrorType.NOT_FOUND);
     }
@@ -38,7 +40,7 @@ public class UserController {
 
   @QueryMapping
   public String login(@Argument String email, @Argument String password) {
-    User user = userRepository.findByEmailAndPassword(email, password);
+    User user = userService.findByEmailAndPassword(email, password);
     if (user == null) {
       throw new GraphQLException("NotMatchEmailAndPassword", ErrorType.FORBIDDEN);
     }
@@ -48,7 +50,7 @@ public class UserController {
 
   @SchemaMapping
   public List<Chat> chats(User user) {
-    List<Chat> chats = chatRepository.findByUserId(user.getId());
+    List<Chat> chats = chatService.findByUserId(user.getId());
     return chats;
   }
 }
