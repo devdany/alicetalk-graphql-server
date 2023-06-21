@@ -10,20 +10,22 @@ import org.springframework.stereotype.Controller;
 
 import com.example.graphqlserver.GraphQLException;
 import com.example.graphqlserver.schemas.chat.Chat;
-import com.example.graphqlserver.schemas.chat.ChatRepository;
+
 import com.example.graphqlserver.schemas.user.User;
-import com.example.graphqlserver.schemas.user.UserRepository;
+import com.example.graphqlserver.services.ChatService;
+import com.example.graphqlserver.services.MessageService;
+import com.example.graphqlserver.services.UserService;
 
 @Controller
 public class MessageController {
   @Autowired
-  private MessageRepository messageRepository;
+  private MessageService messageService;
 
   @Autowired
-  private UserRepository userRepository;
+  private UserService userService;
 
   @Autowired
-  private ChatRepository chatRepository;
+  private ChatService chatService;
 
   @MutationMapping
   public Message sendMessage(@Argument String chatId, @Argument String body, @ContextValue String currentUserId) {
@@ -31,33 +33,33 @@ public class MessageController {
       throw new GraphQLException("UnAuthorized", ErrorType.UNAUTHORIZED);
     }
 
-    User sender = userRepository.findById(currentUserId);
+    User sender = userService.findById(currentUserId);
     
     if (sender == null) {
       throw new GraphQLException("SenderNotFound", ErrorType.NOT_FOUND);
     }
 
-    Chat chat = chatRepository.findById(chatId);
+    Chat chat = chatService.findById(chatId);
     
     if (chat == null) {
       throw new GraphQLException("ChatNotFound", ErrorType.NOT_FOUND);
     }
 
     Message createdMessage = Message.create(chat, sender, body);
-    messageRepository.create(createdMessage);
+    messageService.save(createdMessage);
 
     return createdMessage;
   }
 
   @SchemaMapping
   public User sender(Message message) {
-    User sender = userRepository.findById(message.getSender().getId());
+    User sender = userService.findById(message.getSender().getId());
     return sender;
   }
 
   @SchemaMapping
   public Chat chat(Message message) {
-    Chat chat = chatRepository.findById(message.getChat().getId());
+    Chat chat = chatService.findById(message.getChat().getId());
     return chat;
   }
 }
