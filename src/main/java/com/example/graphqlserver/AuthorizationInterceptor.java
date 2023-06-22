@@ -16,9 +16,11 @@ public class AuthorizationInterceptor implements WebGraphQlInterceptor {
   @Override
   public Mono<WebGraphQlResponse> intercept(WebGraphQlRequest request, Chain chain) {
     String token = request.getHeaders().getFirst("Authorization");
-
-    request.configureExecutionInput((executionInput, builder) -> 
-      builder.graphQLContext(Collections.singletonMap("currentUserId", TokenHelper.decodeAccessToken(token))).build());
+    if (token != null) {
+      request.configureExecutionInput((executionInput, builder) -> 
+        builder.graphQLContext(Collections.singletonMap("currentUserId", TokenHelper.decodeAccessToken(token))).build());
+    }
+    
     return chain.next(request);
   }
 }
