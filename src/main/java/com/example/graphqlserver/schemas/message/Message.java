@@ -1,6 +1,6 @@
 package com.example.graphqlserver.schemas.message;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 import com.example.graphqlserver.schemas.chat.Chat;
@@ -24,7 +24,7 @@ public class Message {
 
   public static Message create(Chat chat, User sender, String body) {
     String messageId = "message-" + StringUtils.generateRandomString();
-    String createdAt = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+    String createdAt = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"));
     Message message = new Message(messageId, body, createdAt, chat, sender);
 
     return message;
