@@ -18,7 +18,7 @@ public class MessageService {
   private Translator translator;
 
   public List<Message> findByChatId(String chatId) {
-    return messageRepository.findByChatIdOrderByCreatedAtDesc(chatId).stream().map(message -> translator.messageEntityToSchema(message)).collect(java.util.stream.Collectors.toList());
+    return messageRepository.findByChatIdOrderByCreatedAtAsc(chatId).stream().map(message -> translator.messageEntityToSchema(message)).collect(java.util.stream.Collectors.toList());
   }
 
   public Message save(Message message) {
