@@ -2,12 +2,6 @@ scalar DateTime
 
 type Query {
     """
-    * 특정 User 조회합니다.
-    * @param id: User의 id
-    * @return the User Schema
-    """
-    user(id: ID!): User
-    """
     * 유저 인증 정보로 로그인합니다.
     * @param email: 유저 이메일
     * @param password: 유저 비밀번호

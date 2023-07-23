@@ -39,7 +39,7 @@ public class ChatController {
   @MutationMapping
   public Chat createChat(@ContextValue String currentUserId, @Argument List<String> memberIds) {
     User creator = userService.findById(currentUserId);
-
+    System.out.println("creator: " + creator);
     if (creator == null) {
       throw new GraphQLException("CreatorNotFound", ErrorType.NOT_FOUND);
     }
