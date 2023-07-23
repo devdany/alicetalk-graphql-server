@@ -60,12 +60,12 @@ class GraphqlServerApplicationTests {
 		WebClient webClient = WebClient.create("http://localhost:8080");
 
 		String response = webClient.post()
-								.uri("/graphql")
-								.contentType(MediaType.APPLICATION_JSON)
-								.bodyValue(formattedQuery)
-								.retrieve()
-								.bodyToMono(String.class)
-								.block();
+			.uri("/graphql")
+			.contentType(MediaType.APPLICATION_JSON)
+			.bodyValue(formattedQuery)
+			.retrieve()
+			.bodyToMono(String.class)
+			.block();
 
 		try {
 			// response의 본문을 JSON으로 파싱
@@ -141,12 +141,12 @@ class GraphqlServerApplicationTests {
 
 		WebClient webClient = WebClient.create("http://localhost:8080");
 		String response = webClient.post()
-				.uri("/graphql")
-				.contentType(MediaType.APPLICATION_JSON)
-				.bodyValue(formattedQuery)
-				.retrieve()
-				.bodyToMono(String.class)
-				.block();
+			.uri("/graphql")
+			.contentType(MediaType.APPLICATION_JSON)
+			.bodyValue(formattedQuery)
+			.retrieve()
+			.bodyToMono(String.class)
+			.block();
 
 		try {
 			JSONObject root = new JSONObject(response);
@@ -209,12 +209,12 @@ class GraphqlServerApplicationTests {
 
 		WebClient webClient = WebClient.create("http://localhost:8080");
 		String response = webClient.post()
-				.uri("/graphql")
-				.contentType(MediaType.APPLICATION_JSON)
-				.bodyValue(formattedQuery)
-				.retrieve()
-				.bodyToMono(String.class)
-				.block();
+			.uri("/graphql")
+			.contentType(MediaType.APPLICATION_JSON)
+			.bodyValue(formattedQuery)
+			.retrieve()
+			.bodyToMono(String.class)
+			.block();
 
 		try {
 			JSONObject root = new JSONObject(response);
@@ -296,12 +296,12 @@ class GraphqlServerApplicationTests {
 
 		WebClient webClient = WebClient.create("http://localhost:8080");
 		String response = webClient.post()
-				.uri("/graphql")
-				.contentType(MediaType.APPLICATION_JSON)
-				.bodyValue(formattedQuery)
-				.retrieve()
-				.bodyToMono(String.class)
-				.block();
+			.uri("/graphql")
+			.contentType(MediaType.APPLICATION_JSON)
+			.bodyValue(formattedQuery)
+			.retrieve()
+			.bodyToMono(String.class)
+			.block();
 
 		try {
 			JSONObject root = new JSONObject(response);
@@ -419,12 +419,12 @@ class GraphqlServerApplicationTests {
 
 		WebClient webClient = WebClient.create("http://localhost:8080");
 		String response = webClient.post()
-				.uri("/graphql")
-				.contentType(MediaType.APPLICATION_JSON)
-				.bodyValue(formattedQuery)
-				.retrieve()
-				.bodyToMono(String.class)
-				.block();
+			.uri("/graphql")
+			.contentType(MediaType.APPLICATION_JSON)
+			.bodyValue(formattedQuery)
+			.retrieve()
+			.bodyToMono(String.class)
+			.block();
 
 			try {
 				JSONObject root = new JSONObject(response);
@@ -504,12 +504,12 @@ class GraphqlServerApplicationTests {
 
 		WebClient webClient = WebClient.create("http://localhost:8080");
 		String response = webClient.post()
-								.uri("/graphql")
-								.contentType(MediaType.APPLICATION_JSON)
-								.bodyValue(formattedQuery)
-								.retrieve()
-								.bodyToMono(String.class)
-								.block();
+			.uri("/graphql")
+			.contentType(MediaType.APPLICATION_JSON)
+			.bodyValue(formattedQuery)
+			.retrieve()
+			.bodyToMono(String.class)
+			.block();
 
 		try {
 			JSONObject root = new JSONObject(response);
@@ -543,12 +543,12 @@ class GraphqlServerApplicationTests {
 
 		WebClient webClient = WebClient.create("http://localhost:8080");
 		String response = webClient.post()
-								.uri("/graphql")
-								.contentType(MediaType.APPLICATION_JSON)
-								.bodyValue(formattedQuery)
-								.retrieve()
-								.bodyToMono(String.class)
-								.block();
+			.uri("/graphql")
+			.contentType(MediaType.APPLICATION_JSON)
+			.bodyValue(formattedQuery)
+			.retrieve()
+			.bodyToMono(String.class)
+			.block();
 
 		try {
 			JSONObject root = new JSONObject(response);
@@ -581,12 +581,12 @@ class GraphqlServerApplicationTests {
 			String cleanedCreateChatMutation = createChatMutation.replaceAll("[\n\t]", " ");
 			String formattedCreateChatMutation = String.format("{ \"query\": \"%s\" }", cleanedCreateChatMutation.replace("\"", "\\\""));
 			String response = webClient.post()
-						.uri("/graphql")
-						.contentType(MediaType.APPLICATION_JSON)
-						.bodyValue(formattedCreateChatMutation)
-						.retrieve()
-						.bodyToMono(String.class)
-						.block();
+				.uri("/graphql")
+				.contentType(MediaType.APPLICATION_JSON)
+				.bodyValue(formattedCreateChatMutation)
+				.retrieve()
+				.bodyToMono(String.class)
+				.block();
 
 			JSONObject root = new JSONObject(response);
 			String chatId = root.getJSONObject("data").getJSONObject("createChat").getString("id");
@@ -605,12 +605,12 @@ class GraphqlServerApplicationTests {
 			String cleanedInviteToChatMutation = inviteToChatMutation.replaceAll("[\n\t]", " ");
 			String formattedInviteToChatMutation = String.format("{ \"query\": \"%s\" }", cleanedInviteToChatMutation.replace("\"", "\\\""));
 			response = webClient.post()
-						.uri("/graphql")
-						.contentType(MediaType.APPLICATION_JSON)
-						.bodyValue(formattedInviteToChatMutation)
-						.retrieve()
-						.bodyToMono(String.class)
-						.block();
+				.uri("/graphql")
+				.contentType(MediaType.APPLICATION_JSON)
+				.bodyValue(formattedInviteToChatMutation)
+				.retrieve()
+				.bodyToMono(String.class)
+				.block();
 
 			root = new JSONObject(response);
 			JSONArray members = root.getJSONObject("data").getJSONObject("inviteToChat").getJSONArray("members");
@@ -629,12 +629,12 @@ class GraphqlServerApplicationTests {
 			String cleanedSendMessageMutation = sendMessageMutation.replaceAll("[\n\t]", " ");
 			String formattedSendMessageMutation = String.format("{ \"query\": \"%s\" }", cleanedSendMessageMutation.replace("\"", "\\\""));
 			response = webClient.post()
-						.uri("/graphql")
-						.contentType(MediaType.APPLICATION_JSON)
-						.bodyValue(formattedSendMessageMutation)
-						.retrieve()
-						.bodyToMono(String.class)
-						.block();
+				.uri("/graphql")
+				.contentType(MediaType.APPLICATION_JSON)
+				.bodyValue(formattedSendMessageMutation)
+				.retrieve()
+				.bodyToMono(String.class)
+				.block();
 
 			root = new JSONObject(response);
 			String messageBody = root.getJSONObject("data").getJSONObject("sendMessage").getString("body");
@@ -653,12 +653,12 @@ class GraphqlServerApplicationTests {
 			String cleanedLeaveChatMutation = leaveChatMutation.replaceAll("[\n\t]", " ");
 			String formattedLeaveChatMutation = String.format("{ \"query\": \"%s\" }", cleanedLeaveChatMutation.replace("\"", "\\\""));
 			response = webClient.post()
-						.uri("/graphql")
-						.contentType(MediaType.APPLICATION_JSON)
-						.bodyValue(formattedLeaveChatMutation)
-						.retrieve()
-						.bodyToMono(String.class)
-						.block();
+				.uri("/graphql")
+				.contentType(MediaType.APPLICATION_JSON)
+				.bodyValue(formattedLeaveChatMutation)
+				.retrieve()
+				.bodyToMono(String.class)
+				.block();
 
 			root = new JSONObject(response);
 			members = root.getJSONObject("data").getJSONObject("leaveChat").getJSONArray("members");
