@@ -12,114 +12,383 @@ import org.springframework.http.MediaType;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 class GraphqlServerApplicationTests {
-
-		/*
-		 * ----------------------------------------------------------------------------------
-		 * [프로젝트1] SDL 작성하기
-		*/
-		@Test
-		@DisplayName("User 타입이 제대로 작성되었는가?")
-		void testUserType() {
-				// Introspection 쿼리
-				String query = """
-					query {
-							__type(name: "User") {
+	/*
+		* ----------------------------------------------------------------------------------
+		* [프로젝트1] SDL 작성하기
+	*/
+	@Test
+	@DisplayName("User 타입이 제대로 작성되었는가?")
+	void testUserType() {
+		// Introspection 쿼리
+		String query = """
+			query {
+					__type(name: "User") {
+							name
+							fields {
 									name
-									fields {
+									type {
 											name
-											type {
-													name
+											kind
+											ofType {
 													kind
+													name
 													ofType {
 															kind
 															name
 															ofType {
 																	kind
 																	name
-																	ofType {
-																			kind
-																			name
-																	}
 															}
 													}
 											}
 									}
 							}
 					}
-					""";
-	
-			// 개행과 탭 문자를 공백으로 변경
-			String cleanedQuery = query.replaceAll("[\n\t]", " ");
-	
-			// 이스케이프 및 JSON 포매팅
-			String formattedQuery = """
+			}
+		""";
+
+		// 개행과 탭 문자를 공백으로 변경
+		String cleanedQuery = query.replaceAll("[\n\t]", " ");
+
+		// 이스케이프 및 JSON 포매팅
+		String formattedQuery = """
 			{
 					"query": "%s"
 			}
-			""".formatted(cleanedQuery.replace("\"", "\\\""));
-			
-			WebClient webClient = WebClient.create("http://localhost:8080");
-	
-			String response = webClient.post()
-									.uri("/graphql")
-									.contentType(MediaType.APPLICATION_JSON)
-									.bodyValue(formattedQuery)
-									.retrieve()
-									.bodyToMono(String.class)
-									.block();
-	
-			try {
-					// response의 본문을 JSON으로 파싱
-					JSONObject root = new JSONObject(response);
-	
-					// User 타입 정보를 가져옴
-					JSONObject userType = root.getJSONObject("data").getJSONObject("__type");
-					if (userType == null) {
-							Assertions.fail("User 타입이 존재하지 않습니다.");
-					}
-	
-					// 필드 정보를 확인
-					JSONArray fields = userType.getJSONArray("fields");
-					if (fields == null) {
-							Assertions.fail("User 타입에 필드가 존재하지 않습니다.");
-					}
-	
-					for (int i = 0; i < fields.length(); i++) {
-							JSONObject field = fields.getJSONObject(i);
-							String fieldName = field.getString("name");
-							JSONObject type = field.getJSONObject("type");
-	
-							if (fieldName.equals("id")) {
-									Assertions.assertEquals("ID", type.getJSONObject("ofType").getString("name"));
-									Assertions.assertEquals("NON_NULL", type.getString("kind"));
-							} else if (fieldName.equals("email")) {
-									Assertions.assertEquals("String", type.getJSONObject("ofType").getString("name"));
-									Assertions.assertEquals("NON_NULL", type.getString("kind"));
-							} else if (fieldName.equals("chats")) {
-									JSONObject ofType = type.getJSONObject("ofType");
-									Assertions.assertEquals("LIST", ofType.getString("kind"));
-									Assertions.assertEquals("Chat", ofType.getJSONObject("ofType").getJSONObject("ofType").getString("name"));
+		""".formatted(cleanedQuery.replace("\"", "\\\""));
+		
+		WebClient webClient = WebClient.create("http://localhost:8080");
+
+		String response = webClient.post()
+								.uri("/graphql")
+								.contentType(MediaType.APPLICATION_JSON)
+								.bodyValue(formattedQuery)
+								.retrieve()
+								.bodyToMono(String.class)
+								.block();
+
+		try {
+			// response의 본문을 JSON으로 파싱
+			JSONObject root = new JSONObject(response);
+
+			// User 타입 정보를 가져옴
+			JSONObject userType = root.getJSONObject("data").getJSONObject("__type");
+			if (userType == null) {
+				Assertions.fail("User 타입이 존재하지 않습니다.");
+			}
+
+			// 필드 정보를 확인
+			JSONArray fields = userType.getJSONArray("fields");
+			if (fields == null) {
+				Assertions.fail("User 타입에 필드가 존재하지 않습니다.");
+			}
+
+			for (int i = 0; i < fields.length(); i++) {
+				JSONObject field = fields.getJSONObject(i);
+				String fieldName = field.getString("name");
+				JSONObject type = field.getJSONObject("type");
+
+				if (fieldName.equals("id")) {
+					Assertions.assertEquals("ID", type.getJSONObject("ofType").getString("name"));
+					Assertions.assertEquals("NON_NULL", type.getString("kind"));
+				} else if (fieldName.equals("email")) {
+					Assertions.assertEquals("String", type.getJSONObject("ofType").getString("name"));
+					Assertions.assertEquals("NON_NULL", type.getString("kind"));
+				} else if (fieldName.equals("chats")) {
+					JSONObject ofType = type.getJSONObject("ofType");
+					Assertions.assertEquals("LIST", ofType.getString("kind"));
+					Assertions.assertEquals("Chat", ofType.getJSONObject("ofType").getJSONObject("ofType").getString("name"));
+				}
+			}
+		} catch (JSONException e) {
+			Assertions.fail(e.getMessage());
+		}
+	}
+
+	@Test
+	@DisplayName("Chat 타입이 제대로 작성되었는가?")
+	void testChatType() {
+		// Introspection 쿼리
+		String query = """
+			query {
+				__type(name: "Chat") {
+						name
+						fields {
+								name
+								type {
+										name
+										kind
+										ofType {
+												kind
+												name
+												ofType {
+														kind
+														name
+														ofType {
+																kind
+																name
+														}
+												}
+										}
+								}
+						}
+				}
+		}
+		""";
+
+		String cleanedQuery = query.replaceAll("[\n\t]", " ");
+		String formattedQuery = String.format("{ \"query\": \"%s\" }", cleanedQuery.replace("\"", "\\\""));
+
+		WebClient webClient = WebClient.create("http://localhost:8080");
+		String response = webClient.post()
+				.uri("/graphql")
+				.contentType(MediaType.APPLICATION_JSON)
+				.bodyValue(formattedQuery)
+				.retrieve()
+				.bodyToMono(String.class)
+				.block();
+
+		try {
+			JSONObject root = new JSONObject(response);
+			JSONObject chatType = root.getJSONObject("data").getJSONObject("__type");
+
+			JSONArray fields = chatType.getJSONArray("fields");
+			for (int i = 0; i < fields.length(); i++) {
+				JSONObject field = fields.getJSONObject(i);
+		
+				String fieldName = field.getString("name");
+				JSONObject type = field.getJSONObject("type");
+				JSONObject firstOfType = type.optJSONObject("ofType");
+				JSONObject secondOfType = firstOfType != null ? firstOfType.optJSONObject("ofType") : null;
+				JSONObject thirdOfType = secondOfType != null ? secondOfType.optJSONObject("ofType") : null;
+				
+				if (fieldName.equals("id")) {
+					String idTypeName = firstOfType.getString("name");
+					Assertions.assertEquals("ID", idTypeName);
+					Assertions.assertEquals("NON_NULL", type.getString("kind"));
+				} else if (fieldName.equals("members")) {
+					String membersTypeName = thirdOfType.getString("name");
+					Assertions.assertEquals("User", membersTypeName);
+					Assertions.assertEquals("LIST", firstOfType.getString("kind"));
+				} else if (fieldName.equals("messages")) {
+					String messagesTypeName = thirdOfType.getString("name");
+					Assertions.assertEquals("Message", messagesTypeName);
+					Assertions.assertEquals("LIST", firstOfType.getString("kind"));
+				}
+			}
+		} catch (JSONException e) {
+			Assertions.fail(e.getMessage());
+		}
+	}
+
+	@Test
+	@DisplayName("Message 타입이 제대로 작성되었는가?")
+	void testMessageType() {
+		// Introspection 쿼리
+		String query = """
+			query {
+					__type(name: "Message") {
+							name
+							fields {
+									name
+									type {
+											name
+											kind
+											ofType {
+													kind
+													name
+											}
+									}
 							}
 					}
-			} catch (JSONException e) {
-					Assertions.fail(e.getMessage());
 			}
-		}
+		""";
 
-    @Test
-    @DisplayName("Chat 타입이 제대로 작성되었는가?")
-    void testChatType() {
-        // Introspection 쿼리
-        String query = """
-					query {
-						__type(name: "Chat") {
-								name
+		String cleanedQuery = query.replaceAll("[\n\t]", " ");
+		String formattedQuery = String.format("{ \"query\": \"%s\" }", cleanedQuery.replace("\"", "\\\""));
+
+		WebClient webClient = WebClient.create("http://localhost:8080");
+		String response = webClient.post()
+				.uri("/graphql")
+				.contentType(MediaType.APPLICATION_JSON)
+				.bodyValue(formattedQuery)
+				.retrieve()
+				.bodyToMono(String.class)
+				.block();
+
+		try {
+			JSONObject root = new JSONObject(response);
+			JSONObject messageType = root.getJSONObject("data").getJSONObject("__type");
+
+			JSONArray fields = messageType.getJSONArray("fields");
+
+			for (int i = 0; i < fields.length(); i++) {
+				JSONObject field = fields.getJSONObject(i);
+				String fieldName = field.getString("name");
+				JSONObject type = field.getJSONObject("type");
+				String typeName = type.isNull("ofType") ? type.getString("name") : type.getJSONObject("ofType").getString("name");
+				String kind = type.getString("kind");
+
+				switch (fieldName) {
+					case "id":
+						Assertions.assertEquals("ID", typeName);
+						Assertions.assertEquals("NON_NULL", kind);
+						break;
+					case "chat":
+						Assertions.assertEquals("Chat", typeName);
+						Assertions.assertEquals("OBJECT", kind);
+						break;
+					case "sender":
+						Assertions.assertEquals("User", typeName);
+						Assertions.assertEquals("OBJECT", kind);
+						break;
+					case "body":
+						Assertions.assertEquals("String", typeName);
+						Assertions.assertEquals("NON_NULL", kind);
+						break;
+					case "createdAt":
+						Assertions.assertEquals("DateTime", typeName);
+						Assertions.assertEquals("NON_NULL", kind);
+						break;
+				}
+			}
+		} catch (JSONException e) {
+			Assertions.fail(e.getMessage());
+		}
+	}
+
+	@Test
+	@DisplayName("Query 타입이 제대로 작성되었는가?")
+	void testQueryType() {
+		// Introspection 쿼리
+		String query = """
+			query {
+					__type(name: "Query") {
+							name
+							fields {
+									name
+									args {
+											name
+											type {
+													kind
+													name
+													ofType {
+															kind
+															name
+													}
+											}
+									}
+									type {
+											name
+											kind
+											ofType {
+													kind
+													name
+											}
+									}
+							}
+					}
+			}
+		""";
+
+		String cleanedQuery = query.replaceAll("[\n\t]", " ");
+		String formattedQuery = String.format("{ \"query\": \"%s\" }", cleanedQuery.replace("\"", "\\\""));
+
+		WebClient webClient = WebClient.create("http://localhost:8080");
+		String response = webClient.post()
+				.uri("/graphql")
+				.contentType(MediaType.APPLICATION_JSON)
+				.bodyValue(formattedQuery)
+				.retrieve()
+				.bodyToMono(String.class)
+				.block();
+
+		try {
+			JSONObject root = new JSONObject(response);
+			JSONObject queryType = root.getJSONObject("data").getJSONObject("__type");
+			JSONArray fields = queryType.getJSONArray("fields");
+
+			for (int i = 0; i < fields.length(); i++) {
+				JSONObject field = fields.getJSONObject(i);
+				String fieldName = field.getString("name");
+				JSONObject returnType = field.getJSONObject("type");
+				String returnTypeName = returnType.isNull("ofType") ? returnType.getString("name") : returnType.getJSONObject("ofType").getString("name");
+				String returnKind = returnType.getString("kind");
+
+				switch (fieldName) {
+					case "user":
+						Assertions.assertEquals("User", returnTypeName);
+						Assertions.assertEquals("OBJECT", returnKind);
+
+						JSONArray userArgs = field.getJSONArray("args");
+						for (int j = 0; j < userArgs.length(); j++) {
+							JSONObject arg = userArgs.getJSONObject(j);
+							if ("id".equals(arg.getString("name"))) {
+								JSONObject argType = arg.getJSONObject("type");
+								Assertions.assertEquals("ID", argType.getJSONObject("ofType").getString("name"));
+								Assertions.assertEquals("NON_NULL", argType.getString("kind"));
+							}
+						}
+						break;
+
+					case "login":
+						Assertions.assertEquals("String", returnTypeName);
+						Assertions.assertEquals("SCALAR", returnKind);
+
+						JSONArray loginArgs = field.getJSONArray("args");
+						for (int j = 0; j < loginArgs.length(); j++) {
+							JSONObject arg = loginArgs.getJSONObject(j);
+							if ("email".equals(arg.getString("name")) || "password".equals(arg.getString("name"))) {
+								JSONObject argType = arg.getJSONObject("type");
+								Assertions.assertEquals("String", argType.getJSONObject("ofType").getString("name"));
+								Assertions.assertEquals("NON_NULL", argType.getString("kind"));
+							}
+						}
+						break;
+
+					case "me":
+						Assertions.assertEquals("User", returnTypeName);
+						Assertions.assertEquals("OBJECT", returnKind);
+						break;
+
+					case "chat":
+						Assertions.assertEquals("Chat", returnTypeName);
+						Assertions.assertEquals("OBJECT", returnKind);
+
+						JSONArray chatArgs = field.getJSONArray("args");
+						for (int j = 0; j < chatArgs.length(); j++) {
+							JSONObject arg = chatArgs.getJSONObject(j);
+							if ("id".equals(arg.getString("name"))) {
+								JSONObject argType = arg.getJSONObject("type");
+								Assertions.assertEquals("ID", argType.getJSONObject("ofType").getString("name"));
+								Assertions.assertEquals("NON_NULL", argType.getString("kind"));
+							}
+						}
+						break;
+
+					default:
+						Assertions.fail("Unexpected field in Query: " + fieldName);
+						break;
+				}
+			}
+		} catch (JSONException e) {
+			Assertions.fail(e.getMessage());
+		}
+	}
+
+	@Test
+	@DisplayName("Mutation 타입이 제대로 작성되었는가?")
+	void testMutationType() {
+		// Introspection 쿼리
+		String query = """
+			query {
+				__schema {
+						mutationType {
 								fields {
 										name
-										type {
+										args {
 												name
-												kind
-												ofType {
+												type {
 														kind
 														name
 														ofType {
@@ -128,439 +397,169 @@ class GraphqlServerApplicationTests {
 																ofType {
 																		kind
 																		name
-																}
-														}
-												}
-										}
-								}
-						}
-				}
-        """;
-
-        String cleanedQuery = query.replaceAll("[\n\t]", " ");
-        String formattedQuery = String.format("{ \"query\": \"%s\" }", cleanedQuery.replace("\"", "\\\""));
-
-        WebClient webClient = WebClient.create("http://localhost:8080");
-        String response = webClient.post()
-            .uri("/graphql")
-            .contentType(MediaType.APPLICATION_JSON)
-            .bodyValue(formattedQuery)
-            .retrieve()
-            .bodyToMono(String.class)
-            .block();
-
-        try {
-            JSONObject root = new JSONObject(response);
-            JSONObject chatType = root.getJSONObject("data").getJSONObject("__type");
-
-            JSONArray fields = chatType.getJSONArray("fields");
-						for (int i = 0; i < fields.length(); i++) {
-							JSONObject field = fields.getJSONObject(i);
-					
-							String fieldName = field.getString("name");
-							JSONObject type = field.getJSONObject("type");
-							JSONObject firstOfType = type.optJSONObject("ofType");
-							JSONObject secondOfType = firstOfType != null ? firstOfType.optJSONObject("ofType") : null;
-							JSONObject thirdOfType = secondOfType != null ? secondOfType.optJSONObject("ofType") : null;
-							
-							if (fieldName.equals("id")) {
-									String idTypeName = firstOfType.getString("name");
-									Assertions.assertEquals("ID", idTypeName);
-									Assertions.assertEquals("NON_NULL", type.getString("kind"));
-							} else if (fieldName.equals("members")) {
-									String membersTypeName = thirdOfType.getString("name");
-									Assertions.assertEquals("User", membersTypeName);
-									Assertions.assertEquals("LIST", firstOfType.getString("kind"));
-							} else if (fieldName.equals("messages")) {
-									String messagesTypeName = thirdOfType.getString("name");
-									Assertions.assertEquals("Message", messagesTypeName);
-									Assertions.assertEquals("LIST", firstOfType.getString("kind"));
-							}
-					}
-        } catch (JSONException e) {
-            Assertions.fail(e.getMessage());
-        }
-    }
-
-    @Test
-    @DisplayName("Message 타입이 제대로 작성되었는가?")
-    void testMessageType() {
-        // Introspection 쿼리
-        String query = """
-            query {
-                __type(name: "Message") {
-                    name
-                    fields {
-                        name
-                        type {
-                            name
-                            kind
-                            ofType {
-                                kind
-                                name
-                            }
-                        }
-                    }
-                }
-            }
-            """;
-
-        String cleanedQuery = query.replaceAll("[\n\t]", " ");
-        String formattedQuery = String.format("{ \"query\": \"%s\" }", cleanedQuery.replace("\"", "\\\""));
-
-        WebClient webClient = WebClient.create("http://localhost:8080");
-        String response = webClient.post()
-            .uri("/graphql")
-            .contentType(MediaType.APPLICATION_JSON)
-            .bodyValue(formattedQuery)
-            .retrieve()
-            .bodyToMono(String.class)
-            .block();
-
-        try {
-            JSONObject root = new JSONObject(response);
-            JSONObject messageType = root.getJSONObject("data").getJSONObject("__type");
-
-            JSONArray fields = messageType.getJSONArray("fields");
-
-            for (int i = 0; i < fields.length(); i++) {
-                JSONObject field = fields.getJSONObject(i);
-                String fieldName = field.getString("name");
-                JSONObject type = field.getJSONObject("type");
-                String typeName = type.isNull("ofType") ? type.getString("name") : type.getJSONObject("ofType").getString("name");
-                String kind = type.getString("kind");
-
-                switch (fieldName) {
-                    case "id":
-                        Assertions.assertEquals("ID", typeName);
-                        Assertions.assertEquals("NON_NULL", kind);
-                        break;
-                    case "chat":
-                        Assertions.assertEquals("Chat", typeName);
-                        Assertions.assertEquals("OBJECT", kind);
-                        break;
-                    case "sender":
-                        Assertions.assertEquals("User", typeName);
-                        Assertions.assertEquals("OBJECT", kind);
-                        break;
-                    case "body":
-                        Assertions.assertEquals("String", typeName);
-                        Assertions.assertEquals("NON_NULL", kind);
-                        break;
-                    case "createdAt":
-                        Assertions.assertEquals("DateTime", typeName);
-                        Assertions.assertEquals("NON_NULL", kind);
-                        break;
-                }
-            }
-        } catch (JSONException e) {
-            Assertions.fail(e.getMessage());
-        }
-    }
-
-		@Test
-    @DisplayName("Query 타입이 제대로 작성되었는가?")
-    void testQueryType() {
-        // Introspection 쿼리
-        String query = """
-            query {
-                __type(name: "Query") {
-                    name
-                    fields {
-                        name
-                        args {
-                            name
-                            type {
-                                kind
-                                name
-                                ofType {
-                                    kind
-                                    name
-                                }
-                            }
-                        }
-                        type {
-                            name
-                            kind
-                            ofType {
-                                kind
-                                name
-                            }
-                        }
-                    }
-                }
-            }
-            """;
-
-        String cleanedQuery = query.replaceAll("[\n\t]", " ");
-        String formattedQuery = String.format("{ \"query\": \"%s\" }", cleanedQuery.replace("\"", "\\\""));
-
-        WebClient webClient = WebClient.create("http://localhost:8080");
-        String response = webClient.post()
-            .uri("/graphql")
-            .contentType(MediaType.APPLICATION_JSON)
-            .bodyValue(formattedQuery)
-            .retrieve()
-            .bodyToMono(String.class)
-            .block();
-
-        try {
-            JSONObject root = new JSONObject(response);
-            JSONObject queryType = root.getJSONObject("data").getJSONObject("__type");
-            JSONArray fields = queryType.getJSONArray("fields");
-
-            for (int i = 0; i < fields.length(); i++) {
-                JSONObject field = fields.getJSONObject(i);
-                String fieldName = field.getString("name");
-                JSONObject returnType = field.getJSONObject("type");
-                String returnTypeName = returnType.isNull("ofType") ? returnType.getString("name") : returnType.getJSONObject("ofType").getString("name");
-                String returnKind = returnType.getString("kind");
-
-                switch (fieldName) {
-                    case "user":
-                        Assertions.assertEquals("User", returnTypeName);
-                        Assertions.assertEquals("OBJECT", returnKind);
-
-                        JSONArray userArgs = field.getJSONArray("args");
-                        for (int j = 0; j < userArgs.length(); j++) {
-                            JSONObject arg = userArgs.getJSONObject(j);
-                            if ("id".equals(arg.getString("name"))) {
-                                JSONObject argType = arg.getJSONObject("type");
-                                Assertions.assertEquals("ID", argType.getJSONObject("ofType").getString("name"));
-                                Assertions.assertEquals("NON_NULL", argType.getString("kind"));
-                            }
-                        }
-                        break;
-
-                    case "login":
-                        Assertions.assertEquals("String", returnTypeName);
-                        Assertions.assertEquals("SCALAR", returnKind);
-
-                        JSONArray loginArgs = field.getJSONArray("args");
-                        for (int j = 0; j < loginArgs.length(); j++) {
-                            JSONObject arg = loginArgs.getJSONObject(j);
-                            if ("email".equals(arg.getString("name")) || "password".equals(arg.getString("name"))) {
-                                JSONObject argType = arg.getJSONObject("type");
-                                Assertions.assertEquals("String", argType.getJSONObject("ofType").getString("name"));
-                                Assertions.assertEquals("NON_NULL", argType.getString("kind"));
-                            }
-                        }
-                        break;
-
-                    case "me":
-                        Assertions.assertEquals("User", returnTypeName);
-                        Assertions.assertEquals("OBJECT", returnKind);
-                        break;
-
-                    case "chat":
-                        Assertions.assertEquals("Chat", returnTypeName);
-                        Assertions.assertEquals("OBJECT", returnKind);
-
-                        JSONArray chatArgs = field.getJSONArray("args");
-                        for (int j = 0; j < chatArgs.length(); j++) {
-                            JSONObject arg = chatArgs.getJSONObject(j);
-                            if ("id".equals(arg.getString("name"))) {
-                                JSONObject argType = arg.getJSONObject("type");
-                                Assertions.assertEquals("ID", argType.getJSONObject("ofType").getString("name"));
-                                Assertions.assertEquals("NON_NULL", argType.getString("kind"));
-                            }
-                        }
-                        break;
-
-                    default:
-                        Assertions.fail("Unexpected field in Query: " + fieldName);
-                        break;
-                }
-            }
-        } catch (JSONException e) {
-            Assertions.fail(e.getMessage());
-        }
-    }
-
-		@Test
-    @DisplayName("Mutation 타입이 제대로 작성되었는가?")
-    void testMutationType() {
-        // Introspection 쿼리
-        String query = """
-					query {
-						__schema {
-								mutationType {
-										fields {
-												name
-												args {
-														name
-														type {
-																kind
-																name
-																ofType {
-																		kind
-																		name
 																		ofType {
 																				kind
 																				name
-																				ofType {
-																						kind
-																						name
-																				}
 																		}
 																}
 														}
 												}
-												type {
-														name
-												}
+										}
+										type {
+												name
 										}
 								}
 						}
 				}
-            """;
+		}
+		""";
 
-        String cleanedQuery = query.replaceAll("[\n\t]", " ");
-        String formattedQuery = String.format("{ \"query\": \"%s\" }", cleanedQuery.replace("\"", "\\\""));
+		String cleanedQuery = query.replaceAll("[\n\t]", " ");
+		String formattedQuery = String.format("{ \"query\": \"%s\" }", cleanedQuery.replace("\"", "\\\""));
 
-        WebClient webClient = WebClient.create("http://localhost:8080");
-        String response = webClient.post()
-            .uri("/graphql")
-            .contentType(MediaType.APPLICATION_JSON)
-            .bodyValue(formattedQuery)
-            .retrieve()
-            .bodyToMono(String.class)
-            .block();
+		WebClient webClient = WebClient.create("http://localhost:8080");
+		String response = webClient.post()
+				.uri("/graphql")
+				.contentType(MediaType.APPLICATION_JSON)
+				.bodyValue(formattedQuery)
+				.retrieve()
+				.bodyToMono(String.class)
+				.block();
 
-						try {
-							JSONObject root = new JSONObject(response);
-							JSONArray fields = root.getJSONObject("data").getJSONObject("__schema").getJSONObject("mutationType").getJSONArray("fields");
-			
-							for (int i = 0; i < fields.length(); i++) {
-									JSONObject field = fields.getJSONObject(i);
-									String fieldName = field.getString("name");
-									JSONArray args = field.getJSONArray("args");
-			
-									for (int j = 0; j < args.length(); j++) {
-											JSONObject arg = args.getJSONObject(j);
-											String argName = arg.getString("name");
-											JSONObject argType = arg.getJSONObject("type");
-			
-											// 여러 ofType 레이어를 통과하며 실제 타입 이름을 가져옴
-											String argTypeName = argType.isNull("name") ? null : argType.getString("name");
-											while (argType != null && argTypeName == null) {
-													argType = argType.isNull("ofType") ? null : argType.getJSONObject("ofType");
-													if (argType != null) {
-															argTypeName = argType.isNull("name") ? null : argType.getString("name");
-													}
-											}
-			
-											switch (fieldName) {
-													case "createChat":
-															if ("memberIds".equals(argName)) {
-																	Assertions.assertEquals("ID", argTypeName); // memberIds는 ID![] 형태이므로
-															}
-															break;
-													case "inviteToChat":
-															if ("chatId".equals(argName)) {
-																	Assertions.assertEquals("ID", argTypeName);
-															} else if ("memberIds".equals(argName)) {
-																	Assertions.assertEquals("ID", argTypeName); // memberIds는 ID![] 형태이므로
-															}
-															break;
-													case "leaveChat":
-															if ("chatId".equals(argName)) {
-																	Assertions.assertEquals("ID", argTypeName);
-															}
-															break;
-													case "sendMessage":
-															if ("chatId".equals(argName)) {
-																	Assertions.assertEquals("ID", argTypeName);
-															} else if ("body".equals(argName)) {
-																	Assertions.assertEquals("String", argTypeName);
-															}
-															break;
-											}
-									}
+			try {
+				JSONObject root = new JSONObject(response);
+				JSONArray fields = root.getJSONObject("data").getJSONObject("__schema").getJSONObject("mutationType").getJSONArray("fields");
+
+				for (int i = 0; i < fields.length(); i++) {
+					JSONObject field = fields.getJSONObject(i);
+					String fieldName = field.getString("name");
+					JSONArray args = field.getJSONArray("args");
+
+					for (int j = 0; j < args.length(); j++) {
+						JSONObject arg = args.getJSONObject(j);
+						String argName = arg.getString("name");
+						JSONObject argType = arg.getJSONObject("type");
+
+						// 여러 ofType 레이어를 통과하며 실제 타입 이름을 가져옴
+						String argTypeName = argType.isNull("name") ? null : argType.getString("name");
+						while (argType != null && argTypeName == null) {
+							argType = argType.isNull("ofType") ? null : argType.getJSONObject("ofType");
+							if (argType != null) {
+								argTypeName = argType.isNull("name") ? null : argType.getString("name");
 							}
-					} catch (JSONException e) {
-							Assertions.fail(e.getMessage());
+						}
+
+						switch (fieldName) {
+							case "createChat":
+								if ("memberIds".equals(argName)) {
+									Assertions.assertEquals("ID", argTypeName); // memberIds는 ID![] 형태이므로
+								}
+								break;
+							case "inviteToChat":
+								if ("chatId".equals(argName)) {
+									Assertions.assertEquals("ID", argTypeName);
+								} else if ("memberIds".equals(argName)) {
+									Assertions.assertEquals("ID", argTypeName); // memberIds는 ID![] 형태이므로
+								}
+								break;
+							case "leaveChat":
+								if ("chatId".equals(argName)) {
+									Assertions.assertEquals("ID", argTypeName);
+								}
+								break;
+							case "sendMessage":
+								if ("chatId".equals(argName)) {
+									Assertions.assertEquals("ID", argTypeName);
+								} else if ("body".equals(argName)) {
+									Assertions.assertEquals("String", argTypeName);
+								}
+								break;
+						}	
 					}
+				}
+			} catch (JSONException e) {
+				Assertions.fail(e.getMessage());
+			}
     }
 	
 
-		// ----------------------------------------------------------------------------------
-		/*
-		 * ----------------------------------------------------------------------------------
-		 * [프로젝트 2-3] Schema 작성하기 - Controller 작성하기
-		*/
+	// ----------------------------------------------------------------------------------
+	/*
+		* ----------------------------------------------------------------------------------
+		* [프로젝트 2-3] Schema 작성하기 - Controller 작성하기
+	*/
 
 
-		@Test
-		@DisplayName("Login Query 테스트")
-		void loginQueryTest() {
-			String query = """
-					query {
-							login(email: "tester@elice.com", password: "1234")
-					}
-					""";
-
-			String cleanedQuery = query.replaceAll("[\n\t]", " ");
-			String formattedQuery = String.format("{ \"query\": \"%s\" }", cleanedQuery.replace("\"", "\\\""));
-
-			WebClient webClient = WebClient.create("http://localhost:8080");
-			String response = webClient.post()
-									.uri("/graphql")
-									.contentType(MediaType.APPLICATION_JSON)
-									.bodyValue(formattedQuery)
-									.retrieve()
-									.bodyToMono(String.class)
-									.block();
-
-			try {
-					JSONObject root = new JSONObject(response);
-					String token = root.getJSONObject("data").getString("login");
-					Assertions.assertNotNull(token);
-			} catch (JSONException e) {
-					Assertions.fail(e.getMessage());
+	@Test
+	@DisplayName("Login Query 테스트")
+	void loginQueryTest() {
+		String query = """
+			query {
+				login(email: "tester@elice.com", password: "1234")
 			}
-		}
+		""";
 
-		@Test
-		@DisplayName("Chat Query 테스트")
-		void chatQueryTest() {
-			String query = """
-					query {
-							chat(id: "chat-fortest") {
+		String cleanedQuery = query.replaceAll("[\n\t]", " ");
+		String formattedQuery = String.format("{ \"query\": \"%s\" }", cleanedQuery.replace("\"", "\\\""));
+
+		WebClient webClient = WebClient.create("http://localhost:8080");
+		String response = webClient.post()
+								.uri("/graphql")
+								.contentType(MediaType.APPLICATION_JSON)
+								.bodyValue(formattedQuery)
+								.retrieve()
+								.bodyToMono(String.class)
+								.block();
+
+		try {
+			JSONObject root = new JSONObject(response);
+			String token = root.getJSONObject("data").getString("login");
+			Assertions.assertNotNull(token);
+		} catch (JSONException e) {
+			Assertions.fail(e.getMessage());
+		}
+	}
+
+	@Test
+	@DisplayName("Chat Query 테스트")
+	void chatQueryTest() {
+		String query = """
+			query {
+					chat(id: "chat-fortest") {
+							id
+							members {
 									id
-									members {
-											id
-											email
-									}
-									messages {
-											body
-									}
+									email
+							}
+							messages {
+									body
 							}
 					}
-					""";
-
-			String cleanedQuery = query.replaceAll("[\n\t]", " ");
-			String formattedQuery = String.format("{ \"query\": \"%s\" }", cleanedQuery.replace("\"", "\\\""));
-
-			WebClient webClient = WebClient.create("http://localhost:8080");
-			String response = webClient.post()
-									.uri("/graphql")
-									.contentType(MediaType.APPLICATION_JSON)
-									.bodyValue(formattedQuery)
-									.retrieve()
-									.bodyToMono(String.class)
-									.block();
-
-			try {
-					JSONObject root = new JSONObject(response);
-					String chatId = root.getJSONObject("data").getJSONObject("chat").getString("id");
-
-					// chat ID가 올바른지 확인
-					Assertions.assertEquals("chat-fortest", chatId);
-			} catch (JSONException e) {
-					Assertions.fail(e.getMessage());
 			}
+		""";
+
+		String cleanedQuery = query.replaceAll("[\n\t]", " ");
+		String formattedQuery = String.format("{ \"query\": \"%s\" }", cleanedQuery.replace("\"", "\\\""));
+
+		WebClient webClient = WebClient.create("http://localhost:8080");
+		String response = webClient.post()
+								.uri("/graphql")
+								.contentType(MediaType.APPLICATION_JSON)
+								.bodyValue(formattedQuery)
+								.retrieve()
+								.bodyToMono(String.class)
+								.block();
+
+		try {
+			JSONObject root = new JSONObject(response);
+			String chatId = root.getJSONObject("data").getJSONObject("chat").getString("id");
+
+			// chat ID가 올바른지 확인
+			Assertions.assertEquals("chat-fortest", chatId);
+		} catch (JSONException e) {
+			Assertions.fail(e.getMessage());
 		}
+	}
 
 	@Test
 	@DisplayName("채팅 관련 Mutation 테스트")
